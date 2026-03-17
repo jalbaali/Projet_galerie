@@ -1,5 +1,5 @@
 
-
+/*GALERIE*/
 /*titres*/
 h1{ 
     
@@ -48,15 +48,10 @@ color: rgb(208, 185, 211);
 
 }
 
-/*pour le menu haut*/
-
-.menu{
-   
-}
 
 /*pour les liens du menu*/
 header{
-    z-index: 1;
+    z-index: 3;
     width: 100%;
     position: relative;
     text-align: center;
@@ -95,18 +90,29 @@ a:hover{
 /*Boite principale */
 
 .box {
-margin-top: -1.5em;
-z-index: 2;
-width: 100%;
-height: auto;
-background-color: rgba(37, 23, 35, 0.925);
-position: relative;
-justify-content: center;
+    padding-top: 5%;
+    padding-bottom: 5%;
+    text-align: center;
+    margin-top: -1.5em;
+    z-index: 2;
+    width: 100%;
+    height: auto;
+    background-color: rgba(37, 23, 35, 0.603);
+    position: relative;
+    justify-content: center;
 }
 
 /*texte descriptif*/
 
-p{  color:rgb(110, 5, 84);
+p.descri{
+    color:rgb(255, 197, 241);
+    font-size: 150%;
+    font-family:"NostalgicRemain-Regular";
+    background-color: rgba(248, 172, 172, 0);
+    border: none;
+}
+
+p{  color:rgb(255, 197, 241);
     font-size: 150%;
     font-family:"NostalgicRemain-Regular";
     justify-content: center;
@@ -118,44 +124,80 @@ p{  color:rgb(110, 5, 84);
     
 }
 
+.comm{
+    color: #924976;
+}
+
 /*Illustrations*/
 
 /*list img*/
-.list_perso{
-    display: flex;
-    flex-wrap: wrap; /* Permet aux images d'aller à la ligne si besoin */
-    justify-content: center; /* Centre les images sur la ligne */
-    gap: 20px; /* Espace entre les images */
-    padding: 10px;
+
+.listimg {
+    padding: 4 4em;
+    display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2%; /* Espacement entre les images */
+  justify-content: center;
 }
 
-img{
-   
-    border: solid 0.1em beige;
-}
-
-.imglist img{
-    
-    width: 260px; /* Prend toute la largeur du conteneur */
-    height: auto; /* Garde le ratio */
-    border-radius: 10px;
-}
-
-/*ligne*/
-.imglist{
-    flex-wrap: wrap;
   
+.gallery-row {
+    display: flex;
+    justify-content: center;
 }
 
+.gallery-row img{
+    object-fit: cover;
+    margin:1em;
+    width: 35em; /* Largeur fixe pour toutes les images */
+    height: 50em; /* Hauteur fixe pour toutes les images */
+    
+    gap: 2%; /* Espacement horizontal entre les images */
+    margin-bottom: 2%; /* Espacement vertical entre les lignes */
+    transition: transform 0.3s ease-in-out; 
+  }
 
-
+  /*zoom*/
 .zoomed{
-
+    margin-top: 2em;
     max-width: 90%;
   max-height: 90%;
-  border-radius: 10px;
+  border-top-left-radius: 10px;
   transition: transform 0.3s ease-in-out;
   z-index: 999;
+}
+
+
+
+.text-box{
+    margin-top: 2em;
+    height: 90%;
+    text-align: left;
+    border-top-right-radius: 0.5em;
+    border-bottom-right-radius: 0.5em;
+    background-color: rgb(193, 166, 201);
+}
+
+/*form connexion*/
+.formcl{
+    margin:1em;
+    text-align: right;
+}
+
+.formcl button{
+    align-self: flex-end;
+    padding: 0.5em 1em;
+    background-color: #572548;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.signup{
+    color: #c47ab1;
+    margin-left: auto;
+    font-size: large;
 }
 
 .overlay {
@@ -166,9 +208,102 @@ img{
     height: 100%;
     background: rgba(0, 0, 0, 0.8); /* Fond noir semi-transparent */
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
     z-index: 1000; /* Assure que ça passe au-dessus du reste */
   }
 
 
+
+/*COMMENTAIRE*/
+
+
+
+.comments-section {
+    height: 83%;
+    margin-top: 1em;
+    padding: 1em;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+}
+
+.comments-section h3 {
+    margin-bottom: 0.5em;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.comments-list {
+    list-style-type: none;
+    height: 30em;
+    padding: 0;
+    margin: 0 0 1em 0;
+    max-height: 30em; /* Limite la hauteur de la liste */
+    max-width: 20em; /* Limite la hauteur de la liste */
+    overflow-y: auto; /* Ajoute un défilement si nécessaire */
+}
+
+.comments-list li {
+    padding: 0.5em 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.comment-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+
+}
+
+comments-list {
+    list-style-type: disc;
+    padding-left: 1.2rem;
+    margin: 0.5rem 0;
+  }
+  
+  .comments-list li {
+    display: list-item;
+    margin-bottom: 0.5rem;
+    font-family: sans-serif;
+  }
+  
+
+.comment-form textarea {
+    width: 100%;
+    height: 80px;
+    padding: 0.5em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
+}
+
+.comment-form button {
+    align-self: flex-end;
+    padding: 0.5em 1em;
+    background-color: #572548;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.comment-form button:hover {
+    background-color: #1a0615;
+}
+
+/*LIKES */
+
+.like_count{
+    color:#1a0615;
+}
+
+.like_button{
+    align-self: flex-end;
+    padding: 0.5em 1em;
+    background-color: #572548;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}

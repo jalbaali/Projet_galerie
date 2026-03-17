@@ -1,46 +1,170 @@
 <!DOCTYPE html>
 <head> <meta charset=utf-8>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-<title>Galerie</title >
-    <link rel="stylesheet" type="text/css" href="../stylesheets/Style3.css">
-    <script>
-
-      document.addEventListener('DOMContentLoaded', () =>{
-        document
-          .querySelectorAll('.zoom-img')
-          .forEach((imageElement) => {
-            imageElement.addEventListener('click',() => {
-              let overlay = document.createElement('div');
-              overlay.classList.add('overlay');
-
-              let zoomedImage = document.createElement('img');
-              zoomedImage.classList.add('zoomed');
-              zoomedImage.src = imageElement.dataset.zoomedUrl;
-
-              document.body.style.overflow = 'hidden';
-
-              overlay.appendChild(zoomedImage);
-              document.body.appendChild(overlay);
-
-              
-              zoomedImage.addEventListener('click', () =>
-              overlay.remove());
-            
-              document.body.style.overflow = '';
-              
-              
-            });
-          });
-      });
+    <link rel="stylesheet" type="text/css" href="stylesheets/Style3.css">
     
+<script>
+  //attends que la page soit chargée pr pas executer js avant
+document.addEventListener('DOMContentLoaded', () => {
+  //selection de tt les images
+  const zoomableImages = document.querySelectorAll('.zoom-img');
+  let currentIndex = 0;
+  let overlay = null;
+
+  zoomableImages.forEach((imageElement, index) => {
+    //pr chaque elem image
+    imageElement.addEventListener('click', async () => {
+      currentIndex = index;//updat index
+      //ajout de l'overlay (fond noir)
+      overlay = document.createElement('div');
+      overlay.classList.add('overlay');
+      //ajout de l'image zoomé depuis le dataset de l'img
+      const zoomedImage = document.createElement('img');
+      zoomedImage.classList.add('zoomed');
+      zoomedImage.src = imageElement.dataset.zoomedUrl;
+
+      //recup commentaires de zoomedImage sur lequel on clique
+      //fetch -> GET par défaut
+      const response = await fetch('load_comments.php?imageurl=' + encodeURIComponent(zoomedImage.src));
+      const serverComments = await response.json();
+
+      //creation de la boite de commentaire
+      let commHTML = '';
+      //si un commentaire
+      if (serverComments.length>0){
+        //on le place dans une ligne de liste 
+        commHTML = serverComments.map(com=>`<li>${com}</li>`).join('');
+      }
+      else{
+        commHTML= '<li>Aucun commentaire pour l’instant.</li>';
+      }
+      const textBox = document.createElement('div');
+      textBox.classList.add('text-box');
+      textBox.innerHTML = `
+        <div class="comments-section">
+          <h3>Commentaires</h3>
+          <ul class="comments-list">
+            ${commHTML}
+          </ul>
+          <form class="comment-form">
+            <textarea placeholder="Ajoutez un commentaire..." required></textarea>
+            <button type="submit">Envoyer</button>
+          </form>
+        </div>`;
+
+      // empeche le scroll de page dans overflow
+      document.body.style.overflow = 'hidden';
+      overlay.appendChild(zoomedImage);//on ajoute les img a l'ov
+      overlay.appendChild(textBox); //on ajoute la textBox a l'ov
+      document.body.appendChild(overlay);  //ajout overlay
+      
+      //on recup le from 
+      const commentForm = textBox.querySelector('.comment-form');
+      //recup la liste de commentaires
+      const commentsList = textBox.querySelector('.comments-list');
+
+      commentForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        //recup l'endroit on on écrit.
+        const textarea = commentForm.querySelector('textarea');
+        //on recupère contenu du txt tapé par l'utilisateur
+        // en enlevant les espaces
+        const comment = textarea.value.trim();
+        if (comment === '') return;
+
+        // Envoi du commentaire à save_comment.PHP
+        await fetch('save_comment.php', {
+          method: 'POST', //envoie a save_comment.php
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `imageurl=${encodeURIComponent(zoomedImage.src)}&comment=${encodeURIComponent(comment)}`
+        });
+
+        // Recharge les commentaires depuis le serveur
+        const nouv_Resp = await fetch('load_comments.php?imageurl=' + encodeURIComponent(zoomedImage.src));
+        const updatedComments = await nouv_Resp.json();
+
+        // Ajout du commentaire
+        // Réinitialise la liste des commentaires
+      let commHTML_update = '';
+      //si un commentaire
+      if (updatedComments.length>0){
+        //on le place dans une ligne de liste 
+        commHTML_update = updatedComments.map(com=>`<li>${com}</li>`).join('');
+      }
+      else{
+        commHTML_update = '<li>Aucun commentaire pour l’instant.</li>';
+      }
+      
+      commentsList.innerHTML = commHTML_update;
+      // Vide le champ -> message envoyé
+      textarea.value = '';
+
+    });
+      //si on clique sur l'overlay il se ferme
+    overlay.addEventListener('click', (even) => {
+      if(even.target === overlay) 
+        closeOverlay();
+      });
+      //si touche clavier detectée -> nav_key
+    document.addEventListener('keydown', nav_key);
+    });
+  });
+
+  function nav_key(event) {
+    if (!overlay) return; //si on est pas dans l'overlay on quitte
+    //on detecte tt 
+    if (event.key === 'ArrowRight') {
+      currentIndex = (currentIndex + 1) % zoomableImages.length;
+      updateZoomedImage();
+      event.preventDefault();
+    } else if (event.key === 'ArrowLeft') {
+      currentIndex = (currentIndex - 1 + zoomableImages.length) % zoomableImages.length;
+      updateZoomedImage();
+      event.preventDefault();
+    } else if (event.key === 'Escape') {
+      closeOverlay();
+      event.preventDefault();
+    }
+  }
+  //passer les photos
+  function updateZoomedImage() {
+    const zoomedImage = overlay.querySelector('.zoomed');
+    zoomedImage.src = zoomableImages[currentIndex].dataset.zoomedUrl;
+  }
+
+  function closeOverlay() {
+    if (overlay) {
+      overlay.remove();
+      overlay = null;
+      //rescroll activé
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyNavigation);
+    }
+  }
+});
     </script>
 </head>
 <body>
-  <h1>Galerie</h1>
+  <?php session_start(); ?>
+<!-- Affiche le formulaire de connexion si pas connecté -->
+<?php if (!isset($_SESSION['user'])): ?>
+  <form class="formcl" action="login.php" method="POST">
+    <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+    <input type="password" name="password" placeholder="Mot de passe" required>
+    <button type="submit">Se connecter</button>
+  </form>
+<?php else: ?>
+  <p>Connecté en tant que <?= htmlspecialchars($_SESSION['user']) ?></p>
+  <form class="formcl" action="logout.php" method="POST">
+    <button type="submit">Se déconnecter</button>
+  </form>
+<?php endif; ?>
+  
     <header>
       <nav><ul class="menu">
-        <li><a href="../index.html"> Home </a></li>
-        <li><a href="Ocs.html"> Ocs </a></li>
+        <li><a href="index.html"> Home </a></li>
+        <?php if (isset($_SESSION['user'])): ?>
+        <li><a href="Ocs.php"> Ocs </a></li>
+        <?php endif; ?>
         <li><a href=""> Projets </a></li>
         <li><a href=""> Boutique </a></li>
         <li><a href=""> A propos </a></li>
@@ -50,65 +174,46 @@
     </header>
   
 <div class="box">
+  <p></p>
+  <h1>Galerie</h1>
+  <img src="img/Shot_star.gif" 
+  >
+  <p class="descri">petite collection de projets</p>
+  <p></p>
+    <div class="listimg">
 
-    <div class="imglist">
-        <!--img1-->
+      <div class="gallery-row">
+       
+      <img class="zoom-img" src="img/Dawn_pilup.png"data-zoomed-url="img/Dawn_pilup.png" data-description=" Commentaires"  >
+      <img class="zoom-img" src="img/Touko_mini.png" data-zoomed-url="img/Touko.png" >
+      <img class="zoom-img" src="img/Harmony.png" data-zoomed-url="img/Harmony.png">
+      </div>
       
-          
-          <img class="zoom-img" src="../img/ref_Layla.png" data-zoomed-url="../img/ref_Layla.png" width="50%" height="50%">
-          
-          
-
-          <!--img2-->
-        
-  
-              <img class="zoom-img" src="../img/Mica_fullbody.png" data-zoomed-url="../img/Mica_fullbody.png" width="150%" height="150%">
-           
-      
-
-          <!--img3-->
-        
-            <!--image originale-->
-        
-              <img class="zoom-img" src="../img/Nyth_fullbody.png" data-zoomed-url="../img/Nyth_fullbody.png" width="50%" height="50%">
-           
-          
-          <!--img4-->
-
-         
-            <img class="zoom-img" src="../img/Zeyna_fullbody.png" data-zoomed-url="../img/Zeyna_fullbody.png" width="50%" height="50%">
-        
-          
-
-
-      
-        <img class="zoom-img" src="../img/Orphea.png" data-zoomed-url="../img/Orphea_fullbody.png" width="device-width" height="device-width">
- 
-     
-
-    <!--img2-->
-  
-   
-        <img class="zoom-img" src="../img/Narh.png" data-zoomed-url="../img/Narh_fullbody.png" width="device-width" height="device-width">
-    
-
-    <!--img3-->
-  
-      <!--image originale-->
-     
-        <img class="zoom-img" src="../img/Rasha.png" data-zoomed-url="../img/Rasha_fullbody.png" width="device-width" height="device-width">
-     
-    <!--img4-->
-
-
-      <img class="zoom-img" src="../img/Zeyna.png" data-zoomed-url="../img/Zeyna_fullbody.png" width="device-width" height="device-width">
-     
-          
+    <div class="gallery-row">
+      <img class="zoom-img" src="img/little_redhood_mini.png" data-zoomed-url="img/little_redhood.png" width="20%" height="20%">
+      <img class="zoom-img" src="img/Legends_mini.png" data-zoomed-url="img/Legends.png" width="20%" height="20%">
+      <img class="zoom-img" src="img/Mob.png" data-zoomed-url="img/Mob.png" width="50%" height="50%">
     </div>
-    
+    <div class="gallery-row">
+      <img class="zoom-img" src="img/BBJ.png" data-zoomed-url="img/BBJ.png" width="20%" height="20%">
+      <img class="zoom-img" src="img/IlluAT_mini.png" data-zoomed-url="img/IlluAT.png" width="50%" height="50%">
+      <img class="zoom-img" src="img/Rasha_fullbody.png" data-zoomed-url="img/Rasha_fullbody.png" width="50%" height="50%">
+    </div>
+    <div class="gallery-row">
+      <img class="zoom-img" src="img/Feunnec_mini.png" data-zoomed-url="img/Feunnec.png" width="50%" height="50%">
+      <img class="zoom-img" src="img/Angle.png" data-zoomed-url="img/Angle.png" width="50%" height="50%">
+      <img class="zoom-img" src="img/Nyth_transfo.png" data-zoomed-url="img/Nyth_transfo.png" width="50%" height="50%">
+    </div>
+    <div class="gallery-row">
+      <img class="zoom-img" src="img/Zayna.png" data-zoomed-url="img/Zayna.png" width="50%" height="50%">
+      <img class="zoom-img" src="img/Serena.png" data-zoomed-url="img/Serena.png" width="50%" height="device-width">
+      <img class="zoom-img" src="img/Narh_fullbody.png" data-zoomed-url="img/Narh_fullbody.png" width="50%" height="50%">
+    </div>
+   
+</ul>
+    </div>
   </div>
-
 
 </ul>
 </body>
-<footer></footer>
+<footer>Projet developpement web Paris 8</footer>

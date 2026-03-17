@@ -1,10 +1,10 @@
+
 <!DOCTYPE html>
 <head> <meta charset=utf-8>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 <title>BoiteaSheeps</title >
     <link rel="stylesheet" type="text/css" href="stylesheets/Style2.css">
     <script>
-
       document.addEventListener('DOMContentLoaded', () =>{
         document
           .querySelectorAll('.zoom-img')
@@ -21,7 +21,6 @@
                 textBox.classList.add('text-box');
                 textBox.innerHTML = `<h2>${imageElement.nextElementSibling.textContent}</h2>
                                      <p>${imageElement.dataset.description}</p>`;
-
 
               document.body.style.overflow = 'hidden';
           
@@ -43,7 +42,6 @@
     </script>
 </head>
 <body>
-  <h1>OCs</h1>
     <header>
       <nav><ul class="menu">
         <li><a href="index.html"> Home </a></li>
@@ -55,10 +53,9 @@
         </ul>
       </nav>
     </header>
-  
+<div class="conteneur">
 <div class="box">
-
-    <div class="fondtitre"><h2>Nebuleuses</h2></div>
+    <div class=" boxpersos">
     <ul class="list_perso">
         <!--img1-->
       
@@ -120,9 +117,10 @@
       </li>
           
     </ul>
+  </div>
     
   </div>
-
+</div>
 
 </ul>
 </body>
